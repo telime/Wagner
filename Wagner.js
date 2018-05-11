@@ -190,6 +190,10 @@ WAGNER.loadShader = function( file, callback ) {
 
 	var oReq = new XMLHttpRequest();
 	oReq.onload = function() {
+		if(oReq.status === 404) {
+			oReq.onerror();
+			return;
+		}
 		var content = oReq.responseText;
 		callback( content );
 	}.bind( this );
