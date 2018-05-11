@@ -190,13 +190,14 @@ WAGNER.loadShader = function( file, callback ) {
 
 	var oReq = new XMLHttpRequest();
 	oReq.onload = function() {
-		if(oReq.status === 404) {
+		if(oReq.status > 400) {
 			oReq.onerror();
 			return;
 		}
 		var content = oReq.responseText;
 		callback( content );
 	}.bind( this );
+	
 	oReq.onerror = function() {
 
 		function WagnerLoadShaderException( f ) {
@@ -208,6 +209,7 @@ WAGNER.loadShader = function( file, callback ) {
 		}
 		throw new WagnerLoadShaderException( file );
 	};
+	
 	oReq.onabort = function() {
 
 		function WagnerLoadShaderException( f ) {
