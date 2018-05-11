@@ -59,6 +59,19 @@ var uvMaterial = new THREE.MeshBasicMaterial();
 
 var shaders = [];
 
+var c = document.body;
+document.getElementById( 'fullscreenBtn' ).addEventListener( 'click', function ( e ) {
+    c.onwebkitfullscreenchange = function ( e ) {
+        c.onwebkitfullscreenchange = function () {};
+    };
+    c.onmozfullscreenchange = function ( e ) {
+        c.onmozfullscreenchange = function () {};
+    };
+    if ( c.webkitRequestFullScreen ) c.webkitRequestFullScreen();
+    if ( c.mozRequestFullScreen ) c.mozRequestFullScreen();
+    e.preventDefault();
+}, false );
+
 var sL = new ShaderLoader();
 sL.add( 'depth-vs', 'vertex-shaders/packed-depth-vs.glsl' );
 sL.add( 'depth-fs', 'fragment-shaders/packed-depth-fs.glsl' );
@@ -80,42 +93,7 @@ sL.onLoaded( function () {
         //shading: THREE.SmoothShading
         flatShading: false
     } );
-} );
-
-/*var sL = new ShaderLoader()
-sL.add( 'uv-vs', 'vertex-shaders/packed-depth-vs.glsl' );
-sL.add( 'uv-fs', 'fragment-shaders/uv-material-fs.glsl' );
-sL.load();
-sL.onLoaded( function() {
-    uvMaterial = new THREE.ShaderMaterial( {
-        uniforms: {
-            mNear: { type: 'f', value: 1 },
-            mFar: { type: 'f', value: 10000 },
-            repeat: { type: 'v2', value: new THREE.Vector2( 1, 1 ) }
-        },
-        vertexShader: this.get( 'uv-vs' ),
-        fragmentShader: this.get( 'uv-fs' ),
-        shading: THREE.SmoothShading
-    } );
-} );*/
-
-var c = document.body;
-document.getElementById( 'fullscreenBtn' ).addEventListener( 'click', function ( e ) {
-    c.onwebkitfullscreenchange = function ( e ) {
-        c.onwebkitfullscreenchange = function () {};
-    };
-    c.onmozfullscreenchange = function ( e ) {
-        c.onmozfullscreenchange = function () {};
-    };
-    if ( c.webkitRequestFullScreen ) c.webkitRequestFullScreen();
-    if ( c.mozRequestFullScreen ) c.mozRequestFullScreen();
-    e.preventDefault();
-}, false );
-
-window.addEventListener( 'load', function () {
-
     init();
-
 } );
 
 function init() {
