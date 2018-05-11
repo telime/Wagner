@@ -55,8 +55,8 @@ function init() {
 	
 	scene = new THREE.Scene();
 
-	camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.z = 1000;
+	camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 0.1, 10000 );
+	camera.position.z = -1000;
 	scene.add( camera );
 
 	controls = new THREE.OrbitControls( camera );
@@ -115,7 +115,7 @@ var modelMaterial = new THREE.MeshPhongMaterial( {
 	map: THREE.ImageUtils.loadTexture( '../assets/textures/1324-decal.jpg' ), 
 	normalMap: THREE.ImageUtils.loadTexture( '../assets/textures/1324-normal.jpg' ),
 	shininess: 10,
-	shading: THREE.SmoothShading
+	flatShading: false
 } );
 
 function createTeapot() {
@@ -201,8 +201,9 @@ function onWindowResize() {
 		w = window.innerWidth,
 		h = window.innerHeight;
 
+	camera.aspect = w / h;
+	camera.updateProjectionMatrix();
 	renderer.setSize( s * w, s * h );
-	camera.projectionMatrix.makePerspective( fov, w / h, camera.near, camera.far );
 	
 	resizePass();
 
@@ -230,7 +231,7 @@ function onMouseWheel( event ) {
 
 	}
 
-	camera.projectionMatrix.makePerspective( fov, window.innerWidth / window.innerHeight, camera.near, camera.far );
+	//camera.projectionMatrix.makePerspective( fov, window.innerWidth / window.innerHeight, camera.near, camera.far );
 	
 }
 

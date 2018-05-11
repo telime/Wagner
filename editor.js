@@ -233,8 +233,10 @@ function onWindowResize() {
         w = window.innerWidth - 480,
         h = window.innerHeight;
 
+	camera.aspect = w / h;
+	camera.updateProjectionMatrix();
     renderer.setSize( s * w, s * h );
-    //camera.projectionMatrix.makePerspective( fov, w / h, camera.near, camera.far );
+    
     composer.setSize( w, h );
     depthTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
     /*normalTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h );
