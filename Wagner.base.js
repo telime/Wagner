@@ -427,7 +427,7 @@ WAGNER.DirtPass = function() {
 
 	WAGNER.Pass.call( this );
 	this.blendPass = new WAGNER.BlendPass();
-	this.dirtTexture = THREE.ImageUtils.loadTexture( WAGNER.assetsPath + '/textures/dirt8.jpg' );
+	this.dirtTexture = new THREE.TextureLoader().load( WAGNER.assetsPath + '/textures/dirt8.jpg' );
 
 	this.params.blendMode = WAGNER.BlendMode.SoftLight;
 
@@ -686,7 +686,7 @@ WAGNER.ASCIIPass = function() {
 	WAGNER.Pass.call( this );
 	WAGNER.log( 'ASCIIPass Pass constructor' );
 	this.loadShader( 'ascii-fs.glsl', function() {
-		this.shader.uniforms.tAscii.value = THREE.ImageUtils.loadTexture( WAGNER.assetsPath + '/ascii/8x16_ascii_font_sorted.gif' );
+		this.shader.uniforms.tAscii.value = new THREE.TextureLoader().load( WAGNER.assetsPath + '/ascii/8x16_ascii_font_sorted.gif' );
 	} );
 
 };

@@ -45,14 +45,14 @@ var particles, particleMaterial;
 var depthTexture, normalTexture, colorTexture, uvTexture, scaledTexture, glowTexture;
 var depthMaterial; // = new THREE.MeshDepthMaterial();
 var modelMaterial = new THREE.MeshPhongMaterial( {
-    map: THREE.ImageUtils.loadTexture( 'assets/textures/1324.jpg' ),
-    normalMap: THREE.ImageUtils.loadTexture( 'assets/textures/1324-normal.jpg' ),
+    map: new THREE.TextureLoader().load( 'assets/textures/1324.jpg' ),
+    normalMap: new THREE.TextureLoader().load( 'assets/textures/1324-normal.jpg' ),
     normalScale: new THREE.Vector2( 0.8, -0.8 ),
     shininess: 100
 } );
 var glowMaterial = new THREE.MeshBasicMaterial( {
-    emissive: 0xffffff,
-    map: THREE.ImageUtils.loadTexture( 'assets/textures/1324-glow.jpg' )
+    color: 0xffffff,
+    map: new THREE.TextureLoader().load( 'assets/textures/1324-glow.jpg' )
 } );
 var uvMaterial = new THREE.MeshBasicMaterial();
 
@@ -77,7 +77,8 @@ sL.onLoaded( function () {
         },
         vertexShader: this.get( 'depth-vs' ),
         fragmentShader: this.get( 'depth-fs' ),
-        shading: THREE.SmoothShading
+        //shading: THREE.SmoothShading
+        flatShading: false
     } );
 } );
 
@@ -128,7 +129,7 @@ function init() {
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 1, 10000 );
+    camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 0.1, 100000 );
     camera.position.z = 1000;
     scene.add( camera );
 
@@ -165,7 +166,16 @@ function init() {
         m.position.set( ( .5 - Math.random() ) * r, ( .5 - Math.random() ) * r, ( .5 - Math.random() ) * r );
         var scale = 10 + Math.random() * 20;
         m.scale.set( scale, scale, scale );
-        THREE.GeometryUtils.merge( g, m );
+        if ( m instanceof THREE.Mesh === false ) {
+
+            console.error( 'THREE.Geometry.mergeMesh(): mesh not an instance of THREE.Mesh.', mesh );
+            return;
+
+        }
+
+        m.matrixAutoUpdate && m.updateMatrix();
+        g.merge(m.geometry,m.matrix );
+        //THREE.GeometryUtils.merge( g, m );
     }
     model = new THREE.Mesh( g, modelMaterial );
     model.castShadow = true;
@@ -186,22 +196,22 @@ function init() {
 
     light.castShadow = true;
 
-    light.shadowCameraNear = 1200;
-    light.shadowCameraFar = 2500;
-    light.shadowCameraFov = 90;
+    light.shadow.camera.near = 1200;
+    light.shadow.camera.far = 2500;
+    light.shadow.camera.fov = 90;
 
     //light.shadowCameraVisible = true;
 
-    light.shadowBias = 0.0001;
-    light.shadowDarkness = 0.5;
+    light.shadow.bias = 0.0001;
+    //light.shadowDarkness = 0.5;
 
-    light.shadowMapWidth = SHADOW_MAP_WIDTH;
-    light.shadowMapHeight = SHADOW_MAP_HEIGHT;
+    light.shadow.mapSize.width = SHADOW_MAP_WIDTH;
+    light.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
 
     scene.add( light );
 
-    renderer.shadowMapEnabled = true;
-    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     composer = new WAGNER.Composer( renderer, {
         useRGBA: true
@@ -224,7 +234,7 @@ function onWindowResize() {
         h = window.innerHeight;
 
     renderer.setSize( s * w, s * h );
-    camera.projectionMatrix.makePerspective( fov, w / h, camera.near, camera.far );
+    //camera.projectionMatrix.makePerspective( fov, w / h, camera.near, camera.far );
     composer.setSize( w, h );
     depthTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
     /*normalTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h );
