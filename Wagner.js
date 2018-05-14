@@ -416,7 +416,52 @@ WAGNER.GenericPass = function( fragmentShaderSource, c ) {
 
 WAGNER.GenericPass.prototype = Object.create( WAGNER.Pass.prototype );
 
+/**
+ * DepthHelper
+ * @param {float} near 
+ * @param {float} far 
+ * @param {int} w optional
+ * @param {int} h optional
+ */
+WAGNER.DepthHelper = function(near, far, w, h) {
+	this.material = new THREE.MeshBasicMaterial();
+	this.resize(w || 1, h || 1);
+	
+	var self = this;
+	WAGNER.loadShader( WAGNER.vertexShadersPath + '/packed-depth-vs.glsl', function( vs ) {
+		WAGNER.loadShader( WAGNER.fragmentShadersPath + '/packed-depth-fs.glsl', function( fs ) {
+			self.material = new THREE.ShaderMaterial({
+				uniforms: {
+					mNear: {
+						type: 'f',
+						value: near
+					},
+					mFar: {
+						type: 'f',
+						value: far
+					}
+				},
+				vertexShader: vs,
+				fragmentShader: fs,
+				flatShading: false
+			} );
+			
+		});
+	});
+};
 
+WAGNER.DepthHelper.prototype.resize = function(w, h){
+	this.texture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
+};
+
+WAGNER.DepthHelper.prototype.update = function(scene, camera, composer, isOverride){
+	var m = scene.overrideMaterial;
+	var _iso = (isOverride === false)? false : true;
+	if(_iso) scene.overrideMaterial = this.material;
+	composer.render( scene, camera, null, this.texture );
+	if(_iso) scene.overrideMaterial = m;
+	return this.texture;
+};
 
 WAGNER.Stack = function ( shadersPool ) {
 
