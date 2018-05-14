@@ -19,7 +19,7 @@
 			#container canvas{ width: 100%; height: 100%;}
 			#fullscreenBtn{ position: absolute; right: 10px; top: 10px; color :white; border: 1px solid white; border-radius: 4px; padding: 10px 20px; background-color: black; text-decoration: none;}
 			#fullscreenBtn:hover{ color: black; background-color: white;}
-			#about{ position: absolute; left: 10px; bottom: 10px; background-color: #000; padding: 10px;}
+			#about{ position: absolute; left: 10px; bottom: 10px; background-color: #000; padding: 10px; font-size: 10px;}
 			a{ color: #b70000;}
 		</style>
 		<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,700,300' rel='stylesheet' type='text/css'>
@@ -37,7 +37,6 @@
 <script src="js/OrbitControls.js"></script>
 <script src="Wagner.js"></script>
 <script src="Wagner.base.js"></script>
-<script src="ShaderLoader.js"></script>
 <script src="js/debugTools.js"></script>
 
 <script>
@@ -73,7 +72,7 @@
 	var particles, particleMaterial;
 
 	var depthTexture, normalTexture, colorTexture, uvTexture, scaledTexture, glowTexture;
-	var depthMaterial;// = new THREE.MeshDepthMaterial();
+	var depthMaterial = new THREE.MeshDepthMaterial();
 	var modelMaterial = new THREE.MeshPhongMaterial( { 
 		map: new THREE.TextureLoader().load( 'assets/textures/1324.jpg' ), 
 		normalMap: new THREE.TextureLoader().load( 'assets/textures/1324-normal.jpg' ),
@@ -87,39 +86,8 @@
 	var uvMaterial = new THREE.MeshBasicMaterial();
 
 	var c = document.body;
-	document.getElementById( 'fullscreenBtn' ).addEventListener( 'click', function( e ) {
-		c.onwebkitfullscreenchange = function(e) {
-			c.onwebkitfullscreenchange = function() {
-			};
-		};
-		c.onmozfullscreenchange = function(e) {
-			c.onmozfullscreenchange = function() {
-			};
-		};
-		if( c.webkitRequestFullScreen ) c.webkitRequestFullScreen();
-		if( c.mozRequestFullScreen ) c.mozRequestFullScreen();
-		e.preventDefault();
-	}, false );
 	
-	//load
-	var sL = new ShaderLoader()
-	sL.add( 'depth-vs', 'vertex-shaders/packed-depth-vs.glsl' );
-	sL.add( 'depth-fs', 'fragment-shaders/packed-depth-fs.glsl' );
-	sL.load();
-	sL.onLoaded( function() {
-		depthMaterial = new THREE.ShaderMaterial( {
-			uniforms: {
-				mNear: { type: 'f', value: 1 },
-				mFar: { type: 'f', value: 1000 }
-			},
-			vertexShader: this.get( 'depth-vs' ),
-			fragmentShader: this.get( 'depth-fs' ),
-			//shading: THREE.SmoothShading
-			flatShading: false
-		} );
-		
-		init();
-	} );
+	var depthHelper = new WAGNER.DepthHelper(1, 1000, 100, 100);
 
 	function init() {
 
@@ -281,7 +249,7 @@
 		camera.updateProjectionMatrix();
 		renderer.setSize( s * w, s * h );
 		composer.setSize( w, h );
-		depthTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
+		depthHelper.resize(w, h);
 	}
 
 	var startTime = Date.now();
@@ -304,14 +272,9 @@
 		
 			renderer.autoClearColor = true;
 			composer.reset();
-
-			model.material = depthMaterial;
-			composer.render( scene, camera, null, depthTexture );
-
-			model.material = modelMaterial;
+			guidedFullBoxBlurPass.params.tBias = depthHelper.update(scene, camera, composer);
+			
 			composer.render( scene, camera );
-
-			guidedFullBoxBlurPass.params.tBias = depthTexture;
 			
 			composer.pass( multiPassBloomPass );
 			composer.pass( guidedFullBoxBlurPass );
@@ -329,6 +292,21 @@
 		
 	}
 	
+	document.getElementById( 'fullscreenBtn' ).addEventListener( 'click', function( e ) {
+		c.onwebkitfullscreenchange = function(e) {
+			c.onwebkitfullscreenchange = function() {
+			};
+		};
+		c.onmozfullscreenchange = function(e) {
+			c.onmozfullscreenchange = function() {
+			};
+		};
+		if( c.webkitRequestFullScreen ) c.webkitRequestFullScreen();
+		if( c.mozRequestFullScreen ) c.mozRequestFullScreen();
+		e.preventDefault();
+	}, false );
+	
+	init();
 }());
 </script>
 		

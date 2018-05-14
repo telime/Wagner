@@ -43,7 +43,7 @@ var composerSim;
 var particles, particleMaterial;
 
 var depthTexture, normalTexture, colorTexture, uvTexture, scaledTexture, glowTexture;
-var depthMaterial; // = new THREE.MeshDepthMaterial();
+var depthMaterial = new THREE.MeshDepthMaterial();
 var modelMaterial = new THREE.MeshPhongMaterial( {
     map: new THREE.TextureLoader().load( 'assets/textures/1324.jpg' ),
     normalMap: new THREE.TextureLoader().load( 'assets/textures/1324-normal.jpg' ),
@@ -56,6 +56,7 @@ var glowMaterial = new THREE.MeshBasicMaterial( {
 } );
 var uvMaterial = new THREE.MeshBasicMaterial();
 
+var depthHelper = new WAGNER.DepthHelper(1, 1000, 100, 100);
 
 var shaders = [];
 
@@ -71,30 +72,6 @@ document.getElementById( 'fullscreenBtn' ).addEventListener( 'click', function (
     if ( c.mozRequestFullScreen ) c.mozRequestFullScreen();
     e.preventDefault();
 }, false );
-
-var sL = new ShaderLoader();
-sL.add( 'depth-vs', 'vertex-shaders/packed-depth-vs.glsl' );
-sL.add( 'depth-fs', 'fragment-shaders/packed-depth-fs.glsl' );
-sL.load();
-sL.onLoaded( function () {
-    depthMaterial = new THREE.ShaderMaterial( {
-        uniforms: {
-            mNear: {
-                type: 'f',
-                value: 1
-            },
-            mFar: {
-                type: 'f',
-                value: 1000
-            }
-        },
-        vertexShader: this.get( 'depth-vs' ),
-        fragmentShader: this.get( 'depth-fs' ),
-        //shading: THREE.SmoothShading
-        flatShading: false
-    } );
-    init();
-} );
 
 function init() {
 
@@ -216,14 +193,7 @@ function onWindowResize() {
     renderer.setSize( s * w, s * h );
     
     composer.setSize( w, h );
-    depthTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
-    /*normalTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h );
-    colorTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
-    uvTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, true );
-    scaledTexture = WAGNER.Pass.prototype.getOfflineTexture( 512, 512, true )
-    glowTexture = WAGNER.Pass.prototype.getOfflineTexture( w, h, false );
-
-    tTexture = WAGNER.Pass.prototype.getOfflineTexture( 100, 100, false );*/
+    depthHelper.resize(w, h);
 }
 
 var startTime = Date.now();
@@ -244,28 +214,14 @@ function render() {
 
         renderer.autoClearColor = true;
         composer.reset();
+        
+        stack.passes.forEach( function ( passItem, index ) {
+            if(!('params' in passItem)) return;
+            if(!('tBias' in passItem.params)) return;
+            passItem.params.tBias = depthHelper.update(scene, camera, composer);
+        });
 
-        model.material = depthMaterial;
-        composer.render( scene, camera, null, depthTexture );
-
-        model.material = modelMaterial;
         composer.render( scene, camera );
-
-
-
-        // shaders.forEach( function ( shader ) {
-        //     if ( shader.active ) {
-
-        //         if ( shader.pass.params && shader.pass.params.tBias ) {
-
-        //             shader.pass.params.tBias = depthTexture;
-
-        //         }
-
-
-        //     }
-        // } );
-
         composer.pass( stack );
         composer.toScreen();
 
@@ -283,6 +239,7 @@ function toType( obj ) {
     return ( {} ).toString.call( obj ).match( /\s([a-zA-Z]+)/ )[ 1 ].toLowerCase()
 }
 
+init();
 
 
 var Editor = ( function () {
@@ -547,7 +504,7 @@ var Editor = ( function () {
     return {
         init: init
     };
-
+    
 } )();
 
 $( function () {
