@@ -12,7 +12,12 @@
 	WAGNER.log = function() {
 		//console.log( Array.prototype.slice.call( arguments ).join( ' ' ) );
 	};
-
+	
+	/**
+	 * WAGNER Composer
+	 * @param {THREE.WebGLRenderer} renderer 
+	 * @param {Object} settings 
+	 */
 	WAGNER.Composer = function( renderer, settings ) {
 
 		this.width = 1;
@@ -186,7 +191,12 @@
 	};
 
 	WAGNER.Composer.prototype.defaultMaterial = new THREE.MeshBasicMaterial();
-
+	
+	/**
+	 * WAGNER LoadShader
+	 * @param {String} file 
+	 * @param {Function} callback 
+	 */
 	WAGNER.loadShader = function( file, callback ) {
 
 		var oReq = new XMLHttpRequest();
@@ -226,7 +236,12 @@
 		oReq.send();
 
 	};
-
+	
+	/**
+	 * WAGNER ProcessShader
+	 * @param {String} vertexShaderCode 
+	 * @param {String} fragmentShaderCode 
+	 */
 	WAGNER.processShader = function( vertexShaderCode, fragmentShaderCode ) {
 
 		WAGNER.log( 'Processing Shader | Performing uniform Reflection...' );
@@ -307,7 +322,6 @@
 			uniforms: uniforms,
 			vertexShader: vertexShaderCode,
 			fragmentShader: fragmentShaderCode,
-			//shading: THREE.FlatShading,
 			flatShading: true,
 			depthWrite: false,
 			depthTest: false,
@@ -335,8 +349,8 @@
 
 	/**
 	 * Load Shader for Pass
-	 * @param {*} id 
-	 * @param {*} c 
+	 * @param {String} id 
+	 * @param {Function} c 
 	 */
 	WAGNER.Pass.prototype.loadShader = function( id, c ) {
 
@@ -671,7 +685,6 @@
 		}
 
 	};
-
 
 	WAGNER.ShadersPool.prototype.extendParams = function(target, source) {
 
