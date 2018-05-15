@@ -230,33 +230,24 @@
 		depthHelper.resize(w, h);
 	}
 
-	var startTime = Date.now();
-
 	function render() {
+		renderer.autoClearColor = true;
+		composer.reset();
+		guidedFullBoxBlurPass.params.tBias = depthHelper.update(scene, camera, composer);
 		
-		var t = .001 * Date.now();
-
-		if( model ) {
+		composer.render( scene, camera );
 		
-			renderer.autoClearColor = true;
-			composer.reset();
-			guidedFullBoxBlurPass.params.tBias = depthHelper.update(scene, camera, composer);
-			
-			composer.render( scene, camera );
-			
-			composer.pass( multiPassBloomPass );
-			composer.pass( guidedFullBoxBlurPass );
-			composer.pass( dirtPass );
+		composer.pass( multiPassBloomPass );
+		composer.pass( guidedFullBoxBlurPass );
+		composer.pass( dirtPass );
 
-			composer.pass( vignette2Pass );
-			composer.pass( fxaaPass );
+		composer.pass( vignette2Pass );
+		composer.pass( fxaaPass );
 
-			composer.toScreen();
+		composer.toScreen();
 
-		}
 
 		requestAnimationFrame( render );
-		startTime = t;
 		
 	}
 	

@@ -454,28 +454,34 @@
 	 * @param {int} h optional
 	 */
 	WAGNER.DepthHelper = function(near, far, w, h) {
+		var self = this;
 		this.material = new THREE.MeshBasicMaterial();
 		this.resize(w || 1, h || 1);
+		this.load(function(vs, fs){
+			self.material = new THREE.ShaderMaterial({
+				uniforms: {
+					mNear: {
+						type: 'f',
+						value: near
+					},
+					mFar: {
+						type: 'f',
+						value: far
+					}
+				},
+				vertexShader: vs,
+				fragmentShader: fs,
+				flatShading: false
+			} );
+			
+		});
 		
-		var self = this;
+	};
+	
+	WAGNER.DepthHelper.prototype.load = function(callback){
 		WAGNER.loadShader( WAGNER.vertexShadersPath + '/packed-depth-vs.glsl', function( vs ) {
 			WAGNER.loadShader( WAGNER.fragmentShadersPath + '/packed-depth-fs.glsl', function( fs ) {
-				self.material = new THREE.ShaderMaterial({
-					uniforms: {
-						mNear: {
-							type: 'f',
-							value: near
-						},
-						mFar: {
-							type: 'f',
-							value: far
-						}
-					},
-					vertexShader: vs,
-					fragmentShader: fs,
-					flatShading: false
-				} );
-				
+				if(typeof callback === 'function') callback(vs, fs);
 			});
 		});
 	};
