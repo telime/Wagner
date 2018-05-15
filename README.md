@@ -18,7 +18,7 @@ telime says:
 This is a personal maintenance project.
 
 You can use the WAGNER composer on the browser just by reading the file(Wagner.js and Wagner.base.js).
-If you can use Transpiler "wagner-common" or "THREE.EffectComposer" is recommended
+If you can use Transpiler [superguigui/Wagner](http://github.com/superguigui/Wagner) or "THREE.EffectComposer" is recommended
 
 
 Basic usage
