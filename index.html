@@ -41,18 +41,10 @@
 
 <script>
 (function(){
+	var useModelData = false;
 
 	var composer;
-	var links = document.querySelectorAll( 'a[rel=external]' );
-	for( var j = 0; j < links.length; j++ ) {
-		var a = links[ j ];
-		a.addEventListener( 'click', function( e ) {
-			window.open( this.href, '_blank' );
-			e.preventDefault();
-		}, false );
-	}
-
-	var container, renderer, scene, camera, mesh, torus, material, fov = 70;
+	var container, renderer, scene, camera, mesh, torus, material, fov = 70, depthHelper;
 	var model, quad, oculusEffect;
 	var light;
 	var controls;
@@ -71,8 +63,7 @@
 
 	var particles, particleMaterial;
 
-	var depthTexture, normalTexture, colorTexture, uvTexture, scaledTexture, glowTexture;
-	var depthMaterial = new THREE.MeshDepthMaterial();
+	var normalTexture, colorTexture, uvTexture, scaledTexture, glowTexture;
 	var modelMaterial = new THREE.MeshPhongMaterial( { 
 		map: new THREE.TextureLoader().load( 'assets/textures/1324.jpg' ), 
 		normalMap: new THREE.TextureLoader().load( 'assets/textures/1324-normal.jpg' ),
@@ -85,18 +76,11 @@
 	} );
 	var uvMaterial = new THREE.MeshBasicMaterial();
 
-	var c = document.body;
-	
-	var depthHelper = new WAGNER.DepthHelper(1, 1000, 100, 100);
-
 	function init() {
-
 		container = document.getElementById( 'container' );
 		
 		scene = new THREE.Scene();
-
 		camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 0.1, 100000 );
-
 		camera.position.z = 1000;
 		scene.add( camera );
 
@@ -108,18 +92,14 @@
 		renderer.setPixelRatio( window.devicePixelRatio );
 		container.appendChild( renderer.domElement );
 
-		window.addEventListener( 'resize', onWindowResize, false );
-
-		var useTeapot = false;
-
-		if( useTeapot ) {
+		if( useModelData ) {
 			
 			var loader = new THREE.JSONLoader();
 			loader.load( 'assets/models/LeePerrySmith.js', function( data ) { 
-				data.computeCentroids();
+				//data.computeCentroids();
 				data.computeFaceNormals();
 				data.computeVertexNormals();
-				THREE.GeometryUtils.center( data );
+				data.center();
 				model = new THREE.Mesh( 
 					data,
 					modelMaterial
@@ -134,7 +114,6 @@
 		} else {
 
 			var s = new THREE.CubeGeometry( 10, 10, 10, 1, 1 ,1 );
-			//var s = new THREE.IcosahedronGeometry( 5, 3 );
 			var g = new THREE.Geometry();
 			var r = 2000;
 			for( var j = 0; j < 100 ; j++ ) {
@@ -177,10 +156,7 @@
 		light.shadow.camera.far = 2500;
 		light.shadow.camera.fov = 90;
 
-		//light.shadowCameraVisible = true;
-
 		light.shadow.bias = 0.0001;
-		//light.shadowDarkness = 0.5;
 
 		light.shadow.mapSize.width = SHADOW_MAP_WIDTH;
 		light.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
@@ -191,6 +167,7 @@
 		renderer.shadowMap.type = THREE.PCFShadowMap;
 
 		composer = new WAGNER.Composer( renderer, { useRGBA: false } );
+		depthHelper = new WAGNER.DepthHelper(1, 1000, 100, 100);
 
 		invertPass = new WAGNER.InvertPass();
 		sepiaPass = new WAGNER.SepiaPass();
@@ -232,6 +209,7 @@
 		guidedFullBoxBlurPass.params.invertBiasMap = true;
 		
 		onWindowResize();
+		window.addEventListener( 'resize', onWindowResize, false );
 
 		render();
 		
@@ -253,22 +231,12 @@
 	}
 
 	var startTime = Date.now();
-	var copy = true;
 
 	function render() {
 		
 		var t = .001 * Date.now();
 
-		/*rS( 'frame' ).start();
-		rS( 'rAF' ).tick();
-		rS( 'FPS' ).frame();*/
-
-		//light.position.set( 0, 3000 * Math.cos( t ), 2000 * Math.sin( t ) );
-
 		if( model ) {
-			/*model.rotation.x += .001;
-			model.rotation.y += .001;
-			model.rotation.z += .005;*/
 		
 			renderer.autoClearColor = true;
 			composer.reset();
@@ -292,6 +260,21 @@
 		
 	}
 	
+	init();
+}());
+</script>
+
+<script>
+(function(){
+	var links = document.querySelectorAll( 'a[rel=external]' );
+	for( let j = 0; j < links.length; j++ ) {
+		let a = links[ j ];
+		a.addEventListener( 'click', function( e ) {
+			window.open( this.href, '_blank' );
+			e.preventDefault();
+		}, false );
+	}
+	
 	document.getElementById( 'fullscreenBtn' ).addEventListener( 'click', function( e ) {
 		c.onwebkitfullscreenchange = function(e) {
 			c.onwebkitfullscreenchange = function() {
@@ -305,8 +288,7 @@
 		if( c.mozRequestFullScreen ) c.mozRequestFullScreen();
 		e.preventDefault();
 	}, false );
-	
-	init();
+
 }());
 </script>
 		
