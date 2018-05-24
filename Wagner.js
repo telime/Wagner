@@ -88,7 +88,7 @@
 
 		if( this.copyPass.isLoaded() ) {
 			if( keep ) this.swapBuffers();
-			this.renderer.render( scene, camera, output?output:this.write, true );
+			this.renderer.render( scene, camera, output? output : this.write, true );
 			if( !output ) this.swapBuffers();
 		}
 
@@ -196,45 +196,36 @@
 	 * WAGNER LoadShader
 	 * @param {String} file 
 	 * @param {Function} callback 
+	 * @param {THREE.LoadingManager} manager optional
 	 */
-	WAGNER.loadShader = function( file, callback ) {
-
-		var oReq = new XMLHttpRequest();
-		oReq.onload = function() {
-			if(oReq.status > 400) {
-				oReq.onerror();
-				return;
-			}
-			var content = oReq.responseText;
-			callback( content );
-		}.bind( this );
+	WAGNER.loadShader = function( file, callback, manager ) {
+		var loader = new THREE.FileLoader(manager || THREE.DefaultLoadingManager);
+		loader.load(
+			file,
+			
+			function ( data ) {
+				WAGNER.log( 'loadShader: 100% loaded' );
+				if(typeof callback === 'function') callback( data );
+			},
 		
-		oReq.onerror = function() {
-
-			function WagnerLoadShaderException( f ) {
-				this.message = 'Shader "' + f + '" couldn\'t be loaded.';
-				this.name = "WagnerLoadShaderException";
-				this.toString = function() {
-					return this.message;
-				};
-			}
-			throw new WagnerLoadShaderException( file );
-		};
+			// onProgress callback
+			function ( xhr ) {
+				WAGNER.log( 'loadShader: ' + (xhr.loaded / xhr.total * 100) + '% loaded' );
+			},
 		
-		oReq.onabort = function() {
-
-			function WagnerLoadShaderException( f ) {
-				this.message = 'Shader "' + f + '" load was aborted.';
-				this.name = "WagnerLoadShaderException";
-				this.toString = function() {
-					return this.message;
-				};
+			// onError callback
+			function ( err ) {
+				WAGNER.log( 'loadShader: An error happened' );
+				function WagnerLoadShaderException( f ) {
+					this.message = 'Shader "' + f + '" couldn\'t be loaded.';
+					this.name = "WagnerLoadShaderException";
+					this.toString = function() {
+						return this.message;
+					};
+				}
+				throw new WagnerLoadShaderException( file );
 			}
-			throw new WagnerLoadShaderException( file );
-		};
-		oReq.open( 'get', file, true );
-		oReq.send();
-
+		);
 	};
 	
 	/**
